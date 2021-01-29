@@ -1,7 +1,7 @@
 Summary: XCP-ng Host Configuration Console
 Name: xsconsole
 Version: 10.1.11
-Release: 1.1%{?dist}
+Release: 1.1.0.ipv6.1%{?dist}
 License: GPL2
 Group: Administration/System
 
@@ -22,7 +22,7 @@ Requires(postun): systemd
 Patch1000: xsconsole-10.1.9-rebrand-xsconsole-service.XCP-ng.patch
 Patch1001: xsconsole-10.1.9-define-xcp-ng-colors.XCP-ng.patch
 Patch1002: xsconsole-10.1.10-replace-ext3-with-ext.XCP-ng.patch
-Patch1003: xsconsole-10.1.10-ipv6.patch
+Patch1003: xsconsole-10.1.11-ipv6.patch
 
 %description
 Console tool for configuring a XCP-ng installation.
@@ -59,6 +59,9 @@ Console tool for configuring a XCP-ng installation.
 %{_unitdir}/xsconsole.service
 
 %changelog
+* Fri Jan 29 2021 Benjamin Reis <benjamin.reis@vates.fr> - 10.1.11-1.1.0.ipv6.1
+- Add IPv6 patch: xsconsole-10.1.11-ipv6.patch
+
 * Wed Jul 01 2020 Samuel Verschelde <stormi-xcp@ylix.fr> - 10.1.11-1.1
 - Rebase on CH 8.2
 - Re-remove incloudsphere subpackage

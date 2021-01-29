@@ -22,6 +22,7 @@ Requires(postun): systemd
 Patch1000: xsconsole-10.1.9-rebrand-xsconsole-service.XCP-ng.patch
 Patch1001: xsconsole-10.1.9-define-xcp-ng-colors.XCP-ng.patch
 Patch1002: xsconsole-10.1.10-replace-ext3-with-ext.XCP-ng.patch
+Patch1003: xsconsole-10.1.10-ipv6.patch
 
 %description
 Console tool for configuring a XCP-ng installation.

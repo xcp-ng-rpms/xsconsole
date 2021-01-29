@@ -1,0 +1,222 @@
+diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSFeatureDNS.py ./plugins-base/XSFeatureDNS.py
+--- ../xsconsole-10.1.11-copy/plugins-base/XSFeatureDNS.py	2021-01-20 16:05:28.406607806 +0100
++++ ./plugins-base/XSFeatureDNS.py	2021-01-26 10:59:01.881740868 +0100
+@@ -179,7 +179,9 @@
+             inPane.AddWrappedTextField(str(dns))
+         inPane.NewLine()
+         for pif in data.derived.managementpifs([]):
+-            if pif['ip_configuration_mode'].lower().startswith('static'):
++            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
++            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
++            if configuration_mode.lower().startswith('static'):
+                 inPane.AddKeyHelpField( { Lang("Enter") : Lang("Update DNS Servers") })
+                 break
+         inPane.AddKeyHelpField( {
+@@ -203,7 +205,9 @@
+     def ActivateHandler(cls):
+         data = Data.Inst()
+         for pif in data.derived.managementpifs([]):
+-            if pif['ip_configuration_mode'].lower().startswith('static'):
++            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
++            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
++            if configuration_mode.lower().startswith('static'):
+                 DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(DNSDialogue()))
+                 return
+ 
+diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSFeatureInterface.py ./plugins-base/XSFeatureInterface.py
+--- ../xsconsole-10.1.11-copy/plugins-base/XSFeatureInterface.py	2021-01-20 16:05:28.408607825 +0100
++++ ./plugins-base/XSFeatureInterface.py	2021-01-20 16:18:03.400607047 +0100
+@@ -83,11 +83,13 @@
+         self.hostname = data.host.hostname('')
+ 
+         if currentPIF is not None:
+-            if 'ip_configuration_mode' in currentPIF: self.mode = currentPIF['ip_configuration_mode']
++            ipv6 = currentPIF['primary_address_type'].lower() == 'ipv6'
++            configuration_mode_key = 'ipv6_configuration_mode' if ipv6 else 'ip_configuration_mode'
++            if configuration_mode_key in currentPIF: self.mode = currentPIF[configuration_mode_key]
+             if self.mode.lower().startswith('static'):
+-                if 'IP' in currentPIF: self.IP = currentPIF['IP']
+-                if 'netmask' in currentPIF: self.netmask = currentPIF['netmask']
+-                if 'gateway' in currentPIF: self.gateway = currentPIF['gateway']
++                if 'IP' in currentPIF: self.IP = currentPIF['IPv6'][0].split('/')[0] if ipv6 else currentPIF['IP']
++                if 'netmask' in currentPIF: self.netmask = currentPIF['IPv6'][0].split('/')[1] if ipv6 else currentPIF['netmask']
++                if 'gateway' in currentPIF: self.gateway = currentPIF['ipv6_gateway'] if ipv6 else currentPIF['gateway']
+ 
+         # Make the menu current choices point to our best guess of current choices
+         if self.nic is not None:
+@@ -455,9 +457,11 @@
+             inPane.AddWrappedTextField(Lang("<No interface configured>"))
+         else:
+             for pif in data.derived.managementpifs([]):
++                ipv6 = pif['primary_address_type'].lower() == 'ipv6'
++                configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
+                 inPane.AddStatusField(Lang('Device', 16), pif['device'])
+                 inPane.AddStatusField(Lang('MAC Address', 16),  pif['MAC'])
+-                inPane.AddStatusField(Lang('DHCP/Static IP', 16),  pif['ip_configuration_mode'])
++                inPane.AddStatusField(Lang('DHCP/Static IP', 16),  configuration_mode)
+
+                 inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))
+                 inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))
+diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSFeatureNetworkReset.py ./plugins-base/XSFeatureNetworkReset.py
+--- ../xsconsole-10.1.11-copy/plugins-base/XSFeatureNetworkReset.py    2021-01-20 16:05:28.409607834 +0100
++++ ./plugins-base/XSFeatureNetworkReset.py    2021-04-30 15:31:33.980127562 +0200
+@@ -365,18 +365,23 @@
+ 		inventory['CURRENT_INTERFACES'] = ''
+ 		write_inventory(inventory)
+ 
++		ipv6 = self.IP.find(':') > -1
++
+ 		# Rewrite firstboot management.conf file, which will be picked it by xcp-networkd on restart (if used)
+ 		f = open(management_conf, 'w')
+ 		try:
+ 			f.write("LABEL='" + self.device + "'\n")
+-			f.write("MODE='" + self.mode + "'\n")
++			f.write(("MODEV6" if ipv6 else "MODE") + "='" + self.mode + "'\n")
+ 			if self.vlan != '':
+ 				f.write("VLAN='" + self.vlan + "'\n")
+ 			if self.mode == 'static':
+-				f.write("IP='" + self.IP + "'\n")
+-				f.write("NETMASK='" + self.netmask + "'\n")
++				if ipv6:
++  					f.write("IPv6='" + self.IP + "/" + self.netmask + "'\n")
++				else:
++					f.write("IP='" + self.IP + "'\n")
++					f.write("NETMASK='" + self.netmask + "'\n")
+ 				if self.gateway != '':
+-					f.write("GATEWAY='" + self.gateway + "'\n")
++					f.write(("IPv6_GATEWAY" if ipv6 else "GATEWAY") + "='" + self.gateway + "'\n")
+ 				if self.dns != '':
+ 					f.write("DNS='" + self.dns + "'\n")
+ 		finally:
+@@ -386,14 +391,17 @@
+ 		f = open(network_reset, 'w')
+ 		try:
+ 			f.write('DEVICE=' + self.device + '\n')
+-			f.write('MODE=' + self.mode + '\n')
++			f.write(('MODE_V6' if ipv6 else 'MODE') + '=' + self.mode + '\n')
+ 			if self.vlan != '':
+ 				f.write('VLAN=' + self.vlan + '\n')
+ 			if self.mode == 'static':
+-				f.write('IP=' + self.IP + '\n')
+-				f.write('NETMASK=' + self.netmask + '\n')
++				if ipv6:
++					f.write('IPV6=' + self.IP + '/' + self.netmask + '\n')
++				else:
++					f.write('IP=' + self.IP + '\n')
++					f.write('NETMASK=' + self.netmask + '\n')
+ 				if self.gateway != '':
+-					f.write('GATEWAY=' + self.gateway + '\n')
++					f.write(('GATEWAY_V6' if ipv6 else 'GATEWAY') + '=' + self.gateway + '\n')
+ 				if self.dns != '':
+ 					f.write('DNS=' + self.dns + '\n')
+ 		finally:
+diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSMenuLayout.py ./plugins-base/XSMenuLayout.py
+--- ../xsconsole-10.1.11-copy/plugins-base/XSMenuLayout.py    2021-01-20 16:05:28.414607881 +0100
++++ ./plugins-base/XSMenuLayout.py    2021-01-21 10:14:43.666639483 +0100
+@@ -68,9 +68,11 @@
+                 ntpState = 'Disabled'
+
+             for pif in data.derived.managementpifs([]):
++                ipv6 = pif['primary_address_type'].lower() == 'ipv6'
++                configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
+                 inPane.AddStatusField(Lang('Device', 16), pif['device'])
+                 inPane.AddStatusField(Lang('MAC Address', 16),  pif['MAC'])
+-                inPane.AddStatusField(Lang('DHCP/Static IP', 16),  pif['ip_configuration_mode'])
++                inPane.AddStatusField(Lang('DHCP/Static IP', 16),  configuration_mode)
+ 
+                 inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))
+                 inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))
+diff -NaurZ ../xsconsole-10.1.11-copy/XSConsoleData.py ./XSConsoleData.py
+--- ../xsconsole-10.1.11-copy/XSConsoleData.py	2021-01-20 16:05:28.397607723 +0100
++++ ./XSConsoleData.py	2021-01-21 11:23:34.438990026 +0100
+@@ -910,7 +910,11 @@
+         Auth.Inst().AssertAuthenticated()
+         try:
+             self.RequireSession()
+-            self.session.xenapi.PIF.reconfigure_ip(inPIF['opaqueref'],  inMode,  inIP,  inNetmask,  inGateway, FirstValue(inDNS, ''))
++            if inPIF['primary_address_type'].lower() == 'ipv4':
++                self.session.xenapi.PIF.reconfigure_ip(inPIF['opaqueref'],  inMode,  inIP,  inNetmask,  inGateway, FirstValue(inDNS, ''))
++            else:
++                inIPv6 = inIP + '/' + inNetmask
++                self.session.xenapi.PIF.reconfigure_ipv6(inPIF['opaqueref'],  inMode,  inIPv6,  inGateway, FirstValue(inDNS, ''))
+             self.session.xenapi.host.management_reconfigure(inPIF['opaqueref'])
+             status, output = commands.getstatusoutput('%s host-signal-networking-change' % (Config.Inst().XECLIPath()))
+             if status != 0:
+@@ -929,7 +933,10 @@
+             self.session.xenapi.host.management_disable()
+             # Disable the PIF that the management interface was using
+             for pif in self.derived.managementpifs([]):
+-                self.session.xenapi.PIF.reconfigure_ip(pif['opaqueref'], 'None','' ,'' ,'' ,'')
++                if pif['primary_address_type'].lower() == 'ipv4':
++                    self.session.xenapi.PIF.reconfigure_ip(pif['opaqueref'], 'None','' ,'' ,'' ,'')
++                else:
++                    self.session.xenapi.PIF.reconfigure_ipv6(pif['opaqueref'], 'None','' ,'' ,'')
+         finally:
+             # Network reconfigured so this link is potentially no longer valid
+             self.session = Auth.Inst().CloseSession(self.session)
+@@ -965,10 +972,12 @@
+ 
+         # FIXME: Address should come from API, but not available at present.  For DHCP this is just a guess at the gateway address
+         for pif in self.derived.managementpifs([]):
+-            if pif['ip_configuration_mode'].lower().startswith('static'):
++            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
++            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
++            if configuration_mode.lower().startswith('static'):
+                 # For static IP the API address is correct
+-                retVal = pif['netmask']
+-            elif pif['ip_configuration_mode'].lower().startswith('dhcp'):
++                retVal = pif['IPv6'][0].split('/')[1] if ipv6 else pif['netmask']
++            elif configuration_mode.lower().startswith('dhcp'):
+                 # For DHCP,  find the gateway address by parsing the output from the 'route' command
+                 if 'bridge' in pif['network']:
+                     device = pif['network']['bridge']
+@@ -995,10 +1004,12 @@
+ 
+         # FIXME: Address should come from API, but not available at present.  For DHCP this is just a guess at the gateway address
+         for pif in self.derived.managementpifs([]):
+-            if pif['ip_configuration_mode'].lower().startswith('static'):
++            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
++            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
++            if configuration_mode.lower().startswith('static'):
+                 # For static IP the API address is correct
+-                retVal = pif['gateway']
+-            elif pif['ip_configuration_mode'].lower().startswith('dhcp'):
++                retVal = pif['ipv6_gateway'] if ipv6 else pif['gateway']
++            elif configuration_mode.lower().startswith('dhcp'):
+                 # For DHCP,  find the gateway address by parsing the output from the 'route' command
+                 if 'bridge' in pif['network']:
+                     device = pif['network']['bridge']
+diff -NaurZ ../xsconsole-10.1.11-copy/XSConsoleUtils.py ./XSConsoleUtils.py
+--- ../xsconsole-10.1.11-copy/XSConsoleUtils.py	2021-01-20 16:05:28.404607788 +0100
++++ ./XSConsoleUtils.py	2021-01-21 09:41:48.757002725 +0100
+@@ -190,26 +190,13 @@
+ class IPUtils:
+     @classmethod
+     def ValidateIP(cls, text):
+-        rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
+-        if not rc: return False
+-        ints = map(int, rc.groups())
+-        largest = 0
+-        for i in ints:
+-            if i > 255: return False
+-            largest = max(largest, i)
+-        if largest is 0: return False
+-        return True
++        ipv4_re = '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}'
++        ipv6_re = '^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))'
++        return re.match(ipv4_re, text) or re.match(ipv6_re, text)
+         
+     @classmethod
+     def ValidateNetmask(cls, text):
+-        rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
+-        if not rc:
+-            return False
+-        ints = map(int, rc.groups())
+-        for i in ints:
+-            if i > 255:
+-                return False
+-        return True
++        return cls.ValidateIP(text) or (int(text) > 4 and int(text) < 128)
+ 
+     @classmethod
+     def AssertValidNetmask(cls, inIP):

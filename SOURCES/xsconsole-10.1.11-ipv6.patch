@@ -1,6 +1,6 @@
 diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSFeatureDNS.py ./plugins-base/XSFeatureDNS.py
 --- ../xsconsole-10.1.11-copy/plugins-base/XSFeatureDNS.py	2021-01-20 16:05:28.406607806 +0100
-+++ ./plugins-base/XSFeatureDNS.py	2021-01-21 10:11:26.911339704 +0100
++++ ./plugins-base/XSFeatureDNS.py	2021-01-26 10:59:01.881740868 +0100
 @@ -179,7 +179,9 @@
              inPane.AddWrappedTextField(str(dns))
          inPane.NewLine()
@@ -12,6 +12,17 @@ diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSFeatureDNS.py ./plugins-bas
                  inPane.AddKeyHelpField( { Lang("Enter") : Lang("Update DNS Servers") })
                  break
          inPane.AddKeyHelpField( {
+@@ -203,7 +205,9 @@
+     def ActivateHandler(cls):
+         data = Data.Inst()
+         for pif in data.derived.managementpifs([]):
+-            if pif['ip_configuration_mode'].lower().startswith('static'):
++            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
++            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
++            if configuration_mode.lower().startswith('static'):
+                 DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(DNSDialogue()))
+                 return
+ 
 diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSFeatureInterface.py ./plugins-base/XSFeatureInterface.py
 --- ../xsconsole-10.1.11-copy/plugins-base/XSFeatureInterface.py	2021-01-20 16:05:28.408607825 +0100
 +++ ./plugins-base/XSFeatureInterface.py	2021-01-20 16:18:03.400607047 +0100
@@ -64,7 +75,7 @@ diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSMenuLayout.py ./plugins-bas
                  inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))
 diff -NaurZ ../xsconsole-10.1.11-copy/XSConsoleData.py ./XSConsoleData.py
 --- ../xsconsole-10.1.11-copy/XSConsoleData.py	2021-01-20 16:05:28.397607723 +0100
-+++ ./XSConsoleData.py	2021-01-21 11:13:40.281672453 +0100
++++ ./XSConsoleData.py	2021-01-21 11:23:34.438990026 +0100
 @@ -910,7 +910,11 @@
          Auth.Inst().AssertAuthenticated()
          try:
@@ -74,7 +85,7 @@ diff -NaurZ ../xsconsole-10.1.11-copy/XSConsoleData.py ./XSConsoleData.py
 +                self.session.xenapi.PIF.reconfigure_ip(inPIF['opaqueref'],  inMode,  inIP,  inNetmask,  inGateway, FirstValue(inDNS, ''))
 +            else:
 +                inIPv6 = inIP + '/' + inNetmask
-+                self.session.xenapi.PIF.reconfigure_ipv6(inPIF['opaqueref'],  inMode,  inIPv6,  inGateway, '2a01:240:ab08:4::1')
++                self.session.xenapi.PIF.reconfigure_ipv6(inPIF['opaqueref'],  inMode,  inIPv6,  inGateway, FirstValue(inDNS, ''))
              self.session.xenapi.host.management_reconfigure(inPIF['opaqueref'])
              status, output = commands.getstatusoutput('%s host-signal-networking-change' % (Config.Inst().XECLIPath()))
              if status != 0:

@@ -1,0 +1,14 @@
+Display a clearer error message when the XAPI service is down.
+
+diff -NaurZ ../xsconsole-10.1.11-copy/plugins-base/XSFeatureStatus.py ./plugins-base/XSFeatureStatus.py
+--- ../xsconsole-10.1.11-copy/plugins-base/XSFeatureStatus.py	2021-01-20 16:05:28.412607862 +0100
++++ ./plugins-base/XSFeatureStatus.py	2021-02-15 09:26:54.753339419 +0100
+@@ -33,6 +33,8 @@
+
+         if len(data.derived.managementpifs([])) == 0:
+             inPane.AddWrappedTextField(Lang("<No network configured>"))
++            inPane.AddWrappedTextField(Lang("XAPI service might not be running."))
++            inPane.AddWrappedTextField(Lang("A toolstack restart could solve this issue."))
+         else:
+             inPane.AddStatusField(Lang('Device', 16), data.derived.managementpifs()[0]['device'])
+             inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))

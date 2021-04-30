@@ -1,7 +1,7 @@
 Summary: XCP-ng Host Configuration Console
 Name: xsconsole
 Version: 10.1.11
-Release: 1.1.0.ipv6.2%{?dist}
+Release: 1.1.0.ipv6.3%{?dist}
 License: GPL2
 Group: Administration/System
 
@@ -59,6 +59,9 @@ Console tool for configuring a XCP-ng installation.
 %{_unitdir}/xsconsole.service
 
 %changelog
+* Fri Apr 30 2021 Benjamin Reis <benjamin.reis@vates.fr> - 10.1.11-1.1.0.ipv6.3
+- Change xsconsole-10.1.11-ipv6.patch: reflect changes in upstream xapi
+
 * Fri Jan 29 2021 Benjamin Reis <benjamin.reis@vates.fr> - 10.1.11-1.1.0.ipv6.2
 - Change xsconsole-10.1.11-ipv6.patch: fix DNS modification in Static IPv6
 

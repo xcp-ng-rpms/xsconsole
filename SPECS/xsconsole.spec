@@ -1,7 +1,7 @@
 Summary: XCP-ng Host Configuration Console
 Name: xsconsole
 Version: 10.1.13
-Release: 1.1%{?dist}
+Release: 1.2%{?dist}
 License: GPL2
 Group: Administration/System
 
@@ -21,6 +21,7 @@ Requires(postun): systemd
 # XCP-ng patches
 Patch1000: xsconsole-10.1.9-rebrand-xsconsole-service.XCP-ng.patch
 Patch1001: xsconsole-10.1.9-define-xcp-ng-colors.XCP-ng.patch
+Patch1002: xsa459-xsconsole.patch
 
 %description
 Console tool for configuring a XCP-ng installation.
@@ -57,6 +58,9 @@ Console tool for configuring a XCP-ng installation.
 %{_unitdir}/xsconsole.service
 
 %changelog
+* Mon Jul 15 2024 Benjamin Reis <benjamin.reis@vates.tech> - 10.1.13-1.2
+- Add xsa459-xsconsole.patch
+
 * Mon Dec 20 2021 Samuel Verschelde <stormi-xcp@ylix.fr> - 10.1.13-1.1
 - Sync with CH 8.2.1
 - Remove patches contributed and merged upstream

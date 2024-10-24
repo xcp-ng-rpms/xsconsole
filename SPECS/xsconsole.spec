@@ -1,15 +1,17 @@
+%global package_speccommit 666688036d17efb24f3dfab3ce0cd8ae5dd0cc29
+%global usver 10.1.13.1
+%global xsver 2
+%global xsrel %{xsver}%{?xscount}%{?xshash}
+%global package_srccommit v10.1.13.1
+
 Summary: XenServer Host Configuration Console
 Name: xsconsole
-Version: 10.1.13
-Release: 1
+Version: 10.1.13.1
+Release: %{?xsrel}%{?dist}
 License: GPL2
 Group: Administration/System
-
-Source0: https://code.citrite.net/rest/archive/latest/projects/XSU/repos/xsconsole/archive?at=v10.1.13&format=tar.gz&prefix=xsconsole-10.1.13#/xsconsole.tar.gz
-
-
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/xsconsole/archive?at=v10.1.13&format=tar.gz&prefix=xsconsole-10.1.13#/xsconsole.tar.gz) = 856ce4c4438905f71fe915597ad803e9c3cfb47a
-
+Source0: xsconsole-10.1.13.1.tar.gz
+Patch0: CP-49228.patch
 Provides: xsconsole0
 BuildRequires: python2-devel
 BuildRequires: systemd
@@ -18,11 +20,13 @@ Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
 
+# CP-49228: We cannot operate with a version of xapi which does not support the deterministic metadata VDI UUIDs
+Conflicts: xapi-core < 1.249.37
+
 %description
 Console tool for configuring a XenServer installation.
 
 %package incloudsphere
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/xsconsole/archive?at=v10.1.13&format=tar.gz&prefix=xsconsole-10.1.13#/xsconsole.tar.gz) = 856ce4c4438905f71fe915597ad803e9c3cfb47a
 Summary: InCloud Sphere plugins for %{name}
 Requires: %{name}%{?_isa} = %{version}-%{release}
 
@@ -65,13 +69,22 @@ InCloud Sphere.
 %{_libdir}/xsconsole/plugins-oem/XSFeatureLicenseNag.py*
 
 %changelog
+* Fri Jun 21 2024 Alex Brett <alex.brett@cloud.com> - 10.1.13.1-2
+- Fix packaging issue
+
+* Mon Jun 17 2024 Alex Brett <alex.brett@cloud.com> - 10.1.13.1-1
+- CA-388527: Fix 'timed out' when creating an iSCSI SR
+- CP-49228: Update Portable SR functionality for deterministic UUIDs
+
 * Fri Jul 09 2021 Ross Lagerwall <ross.lagerwall@citrix.com> - 10.1.13-1
+- Switch upstream to GitHub
 - Display 'Ext' instead of 'Ext3' for `ext` SRs
 - CA-355872: Use XAPI to edit DNS entries within xsconsole
 - Display clearer error message when XAPI unreachable
 - rework is_master to raise in case of failure
 
 * Fri Feb 19 2021 Ross Lagerwall <ross.lagerwall@citrix.com> - 10.1.12-1
+- Add version to tarball filename
 - CA-348699: Fix full version display if the build number is empty
 
 * Wed Jan 08 2020 Ross Lagerwall <ross.lagerwall@citrix.com> - 10.1.11-1

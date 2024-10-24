@@ -1,21 +1,16 @@
-From 20c02765c30bdb7e14e3c020b2d7e956f88c8150 Mon Sep 17 00:00:00 2001
 From: Alex Brett <alex.brett@cloud.com>
-Date: Tue, 9 Jul 2024 16:45:16 +0000
-Subject: [PATCH] Updates to Portable SR functionality
+Date: Wed, 29 May 2024 15:29:49 +0000
+Subject: [PATCH] CP-49228: Restoration and modifications to Portable SR
+ functionality
 
 Modifies functionality to understand the use of legacy format VDIs:
 - Adds an option to search for a legacy format VDI if a new one is not found
 - Handles the case where multiple legacy VDIs are identified
 - Passes the appropriate option to `xe-restore-metadata` when needed
 
-This is XSA-459 / CVE-2024-31144
-
 Also update the subprocess calls to be compatible with python3
 
 Signed-off-by: Alex Brett <alex.brett@cloud.com>
----
- plugins-base/XSFeatureDRRestore.py | 172 ++++++++++++++++++++++-------
- 1 file changed, 135 insertions(+), 37 deletions(-)
 
 diff --git a/plugins-base/XSFeatureDRRestore.py b/plugins-base/XSFeatureDRRestore.py
 index 2cadde5..ea7fd7c 100644
@@ -227,6 +222,3 @@ index 2cadde5..ea7fd7c 100644
              Layout.Inst().PushDialogue(InfoDialogue( Lang("Metadata Restore failed: ")+Lang(e)))
          Data.Inst().Update()
  
--- 
-2.25.1
-

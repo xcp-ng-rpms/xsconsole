@@ -1,15 +1,11 @@
 Summary: XCP-ng Host Configuration Console
 Name: xsconsole
-Version: 10.1.13
-Release: 1.2%{?dist}
+Version: 10.1.13.1
+Release: 2.1%{?dist}
 License: GPL2
 Group: Administration/System
-
-Source0: https://code.citrite.net/rest/archive/latest/projects/XSU/repos/xsconsole/archive?at=v10.1.13&format=tar.gz&prefix=xsconsole-10.1.13#/xsconsole.tar.gz
-
-
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/xsconsole/archive?at=v10.1.13&format=tar.gz&prefix=xsconsole-10.1.13#/xsconsole.tar.gz) = 856ce4c4438905f71fe915597ad803e9c3cfb47a
-
+Source0: xsconsole-10.1.13.1.tar.gz
+Patch0: CP-49228.patch
 Provides: xsconsole0
 BuildRequires: python2-devel
 BuildRequires: systemd
@@ -21,7 +17,6 @@ Requires(postun): systemd
 # XCP-ng patches
 Patch1000: xsconsole-10.1.9-rebrand-xsconsole-service.XCP-ng.patch
 Patch1001: xsconsole-10.1.9-define-xcp-ng-colors.XCP-ng.patch
-Patch1002: xsa459-xsconsole.patch
 
 %description
 Console tool for configuring a XCP-ng installation.
@@ -58,6 +53,16 @@ Console tool for configuring a XCP-ng installation.
 %{_unitdir}/xsconsole.service
 
 %changelog
+* Thu Oct 24 2024 Gael Duperrey <gduperrey@vates.tech> - 10.1.13.1-2.1
+- Rebuild after sync with hotfix XS82ECU1074
+- Removed patch for xsa459 as it was integrated upstream
+- *** Upstream changelog ***
+- * Fri Jun 21 2024 Alex Brett <alex.brett@cloud.com> - 10.1.13.1-2
+- - Fix packaging issue
+- * Mon Jun 17 2024 Alex Brett <alex.brett@cloud.com> - 10.1.13.1-1
+- - CA-388527: Fix 'timed out' when creating an iSCSI SR
+- - CP-49228: Update Portable SR functionality for deterministic UUIDs
+
 * Mon Jul 15 2024 Benjamin Reis <benjamin.reis@vates.tech> - 10.1.13-1.2
 - Add xsa459-xsconsole.patch
 

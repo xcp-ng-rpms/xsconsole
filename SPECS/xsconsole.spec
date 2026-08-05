@@ -38,6 +38,9 @@ Patch1003: xsconsole-11.0.6-Ipv6-pool-join.XCP-ng.patch
 Patch1004: xsconsole-network-reset-without-management-interface-rename.patch
 Patch1005: xsconsole-reset-old-management-interface-when-switching-to-new.patch
 
+# https://github.com/xapi-project/xsconsole/pull/90
+Patch1006: xsconsole-retry-the-xapi-connection-instead-of-latching-it.patch
+
 %description
 Console tool for configuring a XCP-ng installation.
 
@@ -74,6 +77,7 @@ Console tool for configuring a XCP-ng installation.
 
 %changelog
 * Wed Aug 05 2026 Andrii Sultanov <andriy.sultanov@vates.tech> - 11.0.9.3-1.1
+- Retry the xapi connection instead of latching it broken forever
 - Update to upstream 11.0.9.3-1
 - *** Upstream changelog ***
   * Fri Dec 19 2025 Changlei Li <changlei.li@cloud.com> - 11.0.9.3-1

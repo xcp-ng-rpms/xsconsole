@@ -1,14 +1,14 @@
-%global package_speccommit 070a6ba05696264e7d2c7e0476c5ab6daf170f3d
-%global package_srccommit v11.0.9.1
+%global package_speccommit 5692c1bc428d38d37c0794e58402c9987cfbaa45
+%global package_srccommit v11.0.9.3
 %{!?xsrel: %global xsrel 1}
 
 Summary: XCP-ng Host Configuration Console
 Name: xsconsole
-Version: 11.0.9.1
-Release: %{?xsrel}.2%{?dist}
+Version: 11.0.9.3
+Release: %{?xsrel}.1%{?dist}
 License: GPL2
 Group: Administration/System
-Source0: xsconsole-11.0.9.1.tar.gz
+Source0: xsconsole-11.0.9.3.tar.gz
 Provides: xsconsole0
 BuildRequires: python3-devel
 BuildRequires: systemd
@@ -73,10 +73,20 @@ Console tool for configuring a XCP-ng installation.
 %{_unitdir}/xsconsole.service
 
 %changelog
+* Wed Aug 05 2026 Andrii Sultanov <andriy.sultanov@vates.tech> - 11.0.9.3-1.1
+- Update to upstream 11.0.9.3-1
+- *** Upstream changelog ***
+  * Fri Dec 19 2025 Changlei Li <changlei.li@cloud.com> - 11.0.9.3-1
+  - CP-308543 Use xenapi to manage timezone and NTP
+
+  * Thu Dec 11 2025 Changlei Li <changlei.li@cloud.com> - 11.0.9.2-1
+  - CP-309762 Update ntp-dhcp server file path for chrony update
+  - CA-421635 Show the real NTP servers in dhcp NTP mode
+
 * Mon Jun 22 2026 Stefanos Gerangelos <stefanos.gerangelos@vates.tech> - 11.0.9.1-1.2
 - Backport the user option to allow the network reset without renaming the management interface (upstream PR #85)
 - Backport the reset of old management interface configuration when switching to a new one (upstream PR #86)
- 
+
 * Tue Sep 02 2025 Guillaume Thouvenin <guillaume.thouvenin@vates.tech> - 11.0.9.1-1.1
 - Sync with 11.0.9.1-1
 - Drop xsconsole-11.0.8-sync-network-reset-trigger-file.patch

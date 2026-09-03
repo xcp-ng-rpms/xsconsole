@@ -1,14 +1,14 @@
-%global package_speccommit 070a6ba05696264e7d2c7e0476c5ab6daf170f3d
-%global package_srccommit v11.0.9.1
+%global package_speccommit 1f57ee44eba0f6fabb3e328738e00be2f1e60a04
+%global package_srccommit v11.0.9.2
 %{!?xsrel: %global xsrel 1}
 
 Summary: XenServer Host Configuration Console
 Name: xsconsole
-Version: 11.0.9.1
+Version: 11.0.9.2
 Release: %{?xsrel}%{?dist}
 License: GPL2
 Group: Administration/System
-Source0: xsconsole-11.0.9.1.tar.gz
+Source0: xsconsole-11.0.9.2.tar.gz
 Provides: xsconsole0
 BuildRequires: python3-devel
 BuildRequires: systemd
@@ -75,6 +75,10 @@ InCloud Sphere.
 %{_libdir}/xsconsole/plugins-oem/XSFeatureLicenseNag.py*
 
 %changelog
+* Thu Dec 11 2025 Changlei Li <changlei.li@cloud.com> - 11.0.9.2-1
+- CP-309762 Update ntp-dhcp server file path for chrony update
+- CA-421635 Show the real NTP servers in dhcp NTP mode
+
 * Thu Jul 31 2025 Lunfan Zhang <Lunfan.Zhang@cloud.com> - 11.0.9.1-1
 - CP-309227: Enable xsconsole to support control SSH and ssh-auto-mode
 

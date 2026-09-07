@@ -41,6 +41,9 @@ Patch1005: xsconsole-reset-old-management-interface-when-switching-to-new.patch
 # https://github.com/xapi-project/xsconsole/pull/90
 Patch1006: xsconsole-retry-the-xapi-connection-instead-of-latching-it.patch
 
+# https://github.com/xapi-project/xsconsole/pull/84
+Patch1007: xsconsole-v11.1.4-1-ga85348f-CA-417645-Refine-Remote-Shell-status-in-xsconsole.patch
+
 %description
 Console tool for configuring a XCP-ng installation.
 
@@ -77,6 +80,7 @@ Console tool for configuring a XCP-ng installation.
 
 %changelog
 * Thu Sep 03 2026 Philippe Coval <philippe.coval@vates.tech> - 11.0.9.2-1.1
+- Add xsconsole-v11.1.4-1-ga85348f-CA-417645-Refine-Remote-Shell-status-in-xsconsole.patch
 - Sync with 11.0.9.2-1
 - *** Upstream changelog ***
   * Thu Dec 11 2025 Changlei Li <changlei.li@cloud.com> - 11.0.9.2-1

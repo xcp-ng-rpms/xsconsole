@@ -5,7 +5,7 @@
 Summary: XCP-ng Host Configuration Console
 Name: xsconsole
 Version: 11.0.9.2
-Release: %{?xsrel}.1%{?dist}
+Release: %{?xsrel}.1~XCPNG2830.2%{?dist}
 License: GPL2
 Group: Administration/System
 Source0: xsconsole-11.0.9.2.tar.gz

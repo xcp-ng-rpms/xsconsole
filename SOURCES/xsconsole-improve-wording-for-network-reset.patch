@@ -1,0 +1,82 @@
+From 22385e769d01e382eb831750cb195041d56a7ac1 Mon Sep 17 00:00:00 2001
+From: Stefanos Gerangelos <stefanos.gerangelos@vates.tech>
+Date: Fri, 11 Sep 2026 14:03:01 +0200
+Subject: [PATCH] Improve the dialog box wording for Emergency Network Reset
+
+Improve the dialog box description in order to state that the operation
+will (or will not) perform a rename/reset of all the interfaces during
+an Emergency Network Reset (instead of only the management interface).
+
+Signed-off-by: Stefanos Gerangelos <stefanos.gerangelos@vates.tech>
+---
+ plugins-base/XSFeatureNetworkReset.py | 26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/plugins-base/XSFeatureNetworkReset.py b/plugins-base/XSFeatureNetworkReset.py
+index 2d33657..bb4a2af 100644
+--- a/plugins-base/XSFeatureNetworkReset.py
++++ b/plugins-base/XSFeatureNetworkReset.py
+@@ -82,10 +82,10 @@ class NetworkResetDialogue(Dialogue):
+ 		except:
+ 			self.vlan = ''
+ 
+-		self.renameMgmt = True
+-		self.renameMenu = Menu(self, None, Lang("Choose to rename/keep the Management Interface name"), [
+-			ChoiceDef(Lang("Rename"), lambda: self.HandleRenameChoice('RENAME') ),
+-			ChoiceDef(Lang("Keep name"), lambda: self.HandleRenameChoice('KEEP') )
++		self.resetIfaces = True
++		self.renameMenu = Menu(self, None, Lang("Reset the interfaces names to default"), [
++			ChoiceDef(Lang("Yes"), lambda: self.HandleRenameChoice('RENAME') ),
++			ChoiceDef(Lang("No"), lambda: self.HandleRenameChoice('KEEP') )
+ 			])
+ 
+ 		self.modeMenu = Menu(self, None, Lang("Select IP Address Configuration Mode"), [
+@@ -136,7 +136,7 @@ class NetworkResetDialogue(Dialogue):
+ 		pane = self.Pane()
+ 		pane.ResetFields()
+ 
+-		pane.AddTitleField(Lang("Choose to rename/keep the Management Interface name"))
++		pane.AddTitleField(Lang("Reset the interfaces names"))
+ 		pane.AddMenuField(self.renameMenu)
+ 		pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
+ 
+@@ -182,10 +182,10 @@ class NetworkResetDialogue(Dialogue):
+ 
+ 		pane.AddWrappedTextField(Lang("The Primary Management Interface will be reconfigured with the following settings:"))
+ 		pane.AddStatusField(Lang("NIC",  16),  self.device)
+-		if self.renameMgmt:
+-			pane.AddStatusField(Lang("Rename NIC:", 16),  "Yes")
++		if self.resetIfaces:
++			pane.AddStatusField(Lang("Reset NICs names", 16),  "Yes")
+ 		else:
+-			pane.AddStatusField(Lang("Rename NIC:", 16),  "No")
++			pane.AddStatusField(Lang("Reset NICs names", 16),  "No")
+ 		if self.vlan != '':
+ 			pane.AddStatusField(Lang("VLAN",  16),  self.vlan)
+ 		pane.AddStatusField(Lang("IP Mode",  16),  self.mode)
+@@ -338,7 +338,7 @@ class NetworkResetDialogue(Dialogue):
+ 
+ 	def HandleRenameChoice(self,  inChoice):
+ 		if inChoice == 'KEEP':
+-			self.renameMgmt = False
++			self.resetIfaces = False
+ 
+ 		self.ChangeState('MODE')
+ 
+@@ -438,11 +438,13 @@ class NetworkResetDialogue(Dialogue):
+ 		# Reset the domain 0 network interface naming configuration
+ 		# back to a fresh-install state for the currently-installed
+ 		# hardware (unless prevented by the user).
+-		if self.renameMgmt:
+-			XSLog('Will rename the Management Interface')
++		if self.resetIfaces:
++			XSLog('Will reset the interfaces names')
+ 			os.system("/etc/sysconfig/network-scripts/interface-rename.py --reset-to-install")
+ 		else:
+-			XSLog('Will NOT rename the Management Interface')
++			XSLog('Will NOT reset the interfaces names')
++
++		# Else, networkd will do the reset during starting up
+ 
+ class XSFeatureNetworkReset:
+ 	@classmethod

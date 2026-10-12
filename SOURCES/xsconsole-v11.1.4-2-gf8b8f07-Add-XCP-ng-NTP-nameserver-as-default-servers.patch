@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philippe Coval <philippe.coval@vates.tech>
+Date: Mon, 12 Oct 2026 14:18:54 +0200
+Subject: [PATCH] Add XCP-ng NTP nameserver as default servers.
+
+Currently centos nameservers are used as default, this is not desired
+since centos is not involved into XCP-ng maintenance (which is a
+distro on its owm).
+
+Note pool.ntp.org's vendor zone is not yet assigned, so meanwhile as
+fallback xcpng.org (without hyphen) is managing ntp servers (currently
+{0..3}.ntp.xcpng.org redirects to public pool {0..3}.pool.ntp.org)
+
+This change is applied downstream, unsure it brings any value in the
+upstream since XS defined the DEFAULT_NTP_SERVERS (first arrived first
+served), this could be redefined in packaging file (or doing
+introspection of /etc/os-release), if becomes too difficult to
+maintain.
+
+Related-to: XCPNG-2942
+Origin: https://github.com/xcp-ng/xsconsole/pull/6
+Signed-off-by: Philippe Coval <philippe.coval@vates.tech>
+
+diff --git a/XSConsoleConstants.py b/XSConsoleConstants.py
+index 1bffc4773540..48b86961c7c7 100644
+--- a/XSConsoleConstants.py
++++ b/XSConsoleConstants.py
+@@ -1,8 +1,9 @@
+ # Default NTP domains are <int>.[centos|xenserver].pool.ntp.org
+ CENTOS_NTP_POOL_DOMAIN = "centos.pool.ntp.org"
+ XENSERVER_NTP_POOL_DOMAIN = "xenserver.pool.ntp.org"
+-DEFAULT_NTP_DOMAINS = [CENTOS_NTP_POOL_DOMAIN, XENSERVER_NTP_POOL_DOMAIN]
++XCPNG_NTP_DOMAIN = "ntp.xcpng.org"
++DEFAULT_NTP_DOMAINS = [CENTOS_NTP_POOL_DOMAIN, XENSERVER_NTP_POOL_DOMAIN, XCPNG_NTP_DOMAIN]
+ 
+ NUM_DEFAULT_NTP_SERVERS = 4
+ 
+-DEFAULT_NTP_SERVERS = ["%d.%s" % (i, XENSERVER_NTP_POOL_DOMAIN) for i in range(NUM_DEFAULT_NTP_SERVERS)]
++DEFAULT_NTP_SERVERS = ["%d.%s" % (i, XCPNG_NTP_DOMAIN) for i in range(NUM_DEFAULT_NTP_SERVERS)]

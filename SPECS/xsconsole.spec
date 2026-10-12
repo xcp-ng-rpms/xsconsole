@@ -5,7 +5,7 @@
 Summary: XCP-ng Host Configuration Console
 Name: xsconsole
 Version: 11.0.9.2
-Release: %{?xsrel}.1%{?dist}
+Release: %{?xsrel}.2%{?dist}
 License: GPL2
 Group: Administration/System
 Source0: xsconsole-11.0.9.2.tar.gz
@@ -44,6 +44,9 @@ Patch1006: xsconsole-retry-the-xapi-connection-instead-of-latching-it.patch
 # https://github.com/xapi-project/xsconsole/pull/84
 Patch1007: xsconsole-v11.1.4-1-ga85348f-CA-417645-Refine-Remote-Shell-status-in-xsconsole.patch
 
+# https://github.com/xcp-ng/xsconsole/pull/6
+Patch1008: xsconsole-v11.1.4-2-gf8b8f07-Add-XCP-ng-NTP-nameserver-as-default-servers.patch
+
 %description
 Console tool for configuring a XCP-ng installation.
 
@@ -79,6 +82,9 @@ Console tool for configuring a XCP-ng installation.
 %{_unitdir}/xsconsole.service
 
 %changelog
+* Mon Oct 12 2026 Philippe Coval <philippe.coval@vates.tech> - 11.0.9.2-1.2
+- Add XCP-ng NTP nameserver as default servers
+
 * Thu Sep 03 2026 Philippe Coval <philippe.coval@vates.tech> - 11.0.9.2-1.1
 - Add xsconsole-v11.1.4-1-ga85348f-CA-417645-Refine-Remote-Shell-status-in-xsconsole.patch
 - Sync with 11.0.9.2-1
